@@ -25,23 +25,30 @@ CREATE TABLE admin (
   email varchar(50) NOT NULL,
   mot_de_passe varchar(255) NOT NULL
 );
-    
+
+CREATE TABLE magasin (
+    id integer PRIMARY KEY AUTOINCREMENT,
+    nom varchar(30) NOT NULL,
+    adresse varchar(80) NOT NULL,
+    UNIQUE (nom, adresse)
+);
+
 CREATE TABLE produit (
     id integer PRIMARY KEY AUTOINCREMENT,
     nom varchar(30) NOT NULL,
     marque varchar(30) NOT NULL,
     nombre integer NOT NULL,
+    fk_magasin integer NOT NULL,
     FOREIGN KEY(fk_magasin) REFERENCES magasin(id),
     UNIQUE (nom, marque)
     
 );
 
-CREATE TABLE magasin (
-    id integer PRIMARY KEY AUTOINCREMENT,
-    nom varchar(30) NOT NULL,
-    adresse varchar(80) NOT NULL
-    UNIQUE (nom, adresse)
-);
+
+
+/* Mot de passe : Testtest1$ */
+INSERT INTO admin (pseudo, prenom, nom, email, mot_de_passe) VALUES ('HI', 'Hanae','Ibrahim',  'hanae.ibrahim@gmail.com', '$2y$10$rqqrJKqB441HNcsBm8JhWOpOCtK2xrunrHX5Rn4Zf34Nb9UyuZ.aK');
+
 
 
 COMMANDE_SQL;
@@ -54,4 +61,6 @@ if (!$ret) {
     echo "Les tables ont été créées avec succès", "<br>";
 }
 $db->close();
+
+
 ?>

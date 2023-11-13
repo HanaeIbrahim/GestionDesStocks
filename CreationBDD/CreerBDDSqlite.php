@@ -1,6 +1,6 @@
 <?php
 
-$db = new SQLite3('gestionStock.sqlite'); // céer la base de donnée si elle n'existe pas encore et si elle existe il s'y connect
+$db = new SQLite3('../gestionStock.sqlite'); // céer la base de donnée si elle n'existe pas encore et si elle existe il s'y connect
 if (!$db) {
     echo $db->lastErrorMsg();
 } else {
@@ -19,10 +19,9 @@ ON DELETE CASCADE : si je supp un magasin auto tous les produits qui ont comme i
 $sql = <<<'COMMANDE_SQL'
 CREATE TABLE admin (
   id integer PRIMARY KEY AUTOINCREMENT,
-  pseudo varchar(30) NOT NULL UNIQUE,
   prenom varchar(30) NOT NULL,
   nom varchar(30) NOT NULL,
-  email varchar(50) NOT NULL,
+  email varchar(50) NOT NULL UNIQUE,
   mot_de_passe varchar(255) NOT NULL
 );
 
@@ -47,7 +46,7 @@ CREATE TABLE produit (
 
 
 /* Mot de passe : Testtest1$ */
-INSERT INTO admin (pseudo, prenom, nom, email, mot_de_passe) VALUES ('HI', 'Hanae','Ibrahim',  'hanae.ibrahim@gmail.com', '$2y$10$rqqrJKqB441HNcsBm8JhWOpOCtK2xrunrHX5Rn4Zf34Nb9UyuZ.aK');
+INSERT INTO admin (prenom, nom, email, mot_de_passe) VALUES ('Hanae','Ibrahim',  'hanae.ibrahim@gmail.com', '$2y$10$rqqrJKqB441HNcsBm8JhWOpOCtK2xrunrHX5Rn4Zf34Nb9UyuZ.aK');
 
 
 

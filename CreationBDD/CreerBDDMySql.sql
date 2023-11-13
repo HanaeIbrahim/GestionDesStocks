@@ -14,10 +14,9 @@ USE gestionStock;
 -- Créer les tables admin, produit et magasin
 CREATE TABLE IF NOT EXISTS admin (
   id int UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  pseudo varchar(30) NOT NULL UNIQUE,
   prenom varchar(30) NOT NULL,
   nom varchar(30) NOT NULL,
-  email varchar(50) NOT NULL,
+  email varchar(50) NOT NULL UNIQUE,
   mot_de_passe varchar(255) NOT NULL
 );
 
@@ -44,7 +43,7 @@ CREATE TABLE IF NOT EXISTS produit (
 
 
 /* Mot de passe : Testtest1$   */
-INSERT INTO admin (pseudo, prenom, nom, email, mot_de_passe) VALUES ('HI', 'Hanae','Ibrahim',  'hanae.ibrahim@gmail.com', '$2y$10$rqqrJKqB441HNcsBm8JhWOpOCtK2xrunrHX5Rn4Zf34Nb9UyuZ.aK');
+INSERT INTO admin (prenom, nom, email, mot_de_passe) VALUES ('Hanae','Ibrahim',  'hanae.ibrahim@gmail.com', '$2y$10$rqqrJKqB441HNcsBm8JhWOpOCtK2xrunrHX5Rn4Zf34Nb9UyuZ.aK');
 
 
 

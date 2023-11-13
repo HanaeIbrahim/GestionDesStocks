@@ -21,178 +21,39 @@ class DbManager implements I_API {
         }
     }
 
-    // une fonction pour créer des admins
-    public function storeAdmin($pseudo, $nom, $prenom, $email, $mot_de_passe): bool {
-        $stored = false;
-        if (!empty($pseudo) && !empty($nom) && !empty($prenom) && !empty($email) && !empty($mot_de_passe)) {
-            
-            $datas = [
-                'pseudo' => $pseudo,
-                'nom' => $nom,
-                'prenom' => $prenom,
-                'email' => $email,
-                'mot_de_passe' => $mot_de_passe,
-                
-            ];
-            $sql = "INSERT INTO users (pseudo, nom, prenom, email, mot_de_passe) VALUES "
-                    . "(:pseudo, :nom, :prenom, :email, :mot_de_passe)";
-            $this->db->prepare($sql)->execute($datas);
-            $stored = true;
-        }
-        return $stored;
-    }
-
-    // une fonction pour vérifier si l'email existe déjà
-    public function emailExist($email): bool {
-        $sql = "SELECT count(*) From admin WHERE email = :email;";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam('email', $email, \PDO::PARAM_STR);
-        $stmt->execute();
-        return $stmt->fetchColumn() > 0;
-    }
     
-     //connection entant qu'admin
+     //connection entant qu'admin, array car il envoie email_ok et mot_de_passe_ok
      public function getAdminDatas($email, $mot_de_passe): array {
         $sql = "SELECT * From admin WHERE email = :email;";
+        // on prèpare la requetepour pouvoir lui passer des paramètres
         $stmt = $this->db->prepare($sql);
+        // récupérer les paramètres- eviter injection SQL pour pas hacker
         $stmt->bindParam('email', $email, \PDO::PARAM_STR);
+        //executer la requete avec les paramètres
         $stmt->execute();
+        // récupérer les résultats de la requete
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if (!$donnees) {
-            $donnees[0]["email_ok"] = false;
+        // si on recois rien
+        if (!$donnees || !password_verify($mot_de_passe, $donnees[0]["mot_de_passe"])) {
+            $donnees[0]["authentification_ok"] = false;
         } else {
-            if (!password_verify($$mot_de_passe, $donnees[0]["mot_de_passe"])) {
-                unset($donnees[0]);
-                $donnees[0]["email_ok"] = true;
-                $donnees[0]["mot_de_passe_ok"] = false;
-            } else {
-                $donnees[0]["email_ok"] = true;
-                $donnees[0]["mot_de_passe_ok"] = true;
-                unset($donnees[0]["pmot_de_passe"]);
-            }
+            // si l'authenfication de l'email et le mot de passe sont corrects
+            $donnees[0]["authentification_ok"] = true;
+            // on supprime le mot de passe pour pas le renvoyer
+            unset($donnees[0]["mot_de_passe"]);
+            
         }
         return $donnees[0];
     }
 
-    // pour récupérer les informations d'un utilisateur à partir de sa base de données. 
-    public function getAdminDatasBis($id_admin): array {
-        $sql = "SELECT id, pseudo, nom, prenom, email From admin WHERE id = :id_admin;";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam('id_admin', $id_admin, \PDO::PARAM_STR);
-        $stmt->execute();
-        $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if (!$donnees) {
-            $donnees[0]["id"] = -1;
-        }
-        return $donnees[0];
-    }
-
-    //La fonction getEventDatas est utilisée pour récupérer les informations d'un événement à partir de la base de données
-    public function getProductDatas($id): array{
-            $sql = "SELECT * From produit WHERE id = :id;";
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindParam('id', $id, \PDO::PARAM_STR);
-            $stmt->execute();
-            $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-            if (!$donnees) {
-                $donnees[0]["id"] = -1;
-            }
-            return $donnees[0];
-    }
-
-    // une fonction pour créer des produits
-    public function storeProduct($nom, $marque, $nombre, $fk_magasin): bool {
-        $stored = false;
-        if (!empty($nom) && !empty($marque) && !empty($nombre) && !empty($fk_magasin)) {
-            $datas = [
-                'nom' => $nom,
-                'marque' => $marque,
-                'nombre' => $nombre,
-                'fk_magasin' => $fk_magasin,
-            ];
-            $sql = "INSERT INTO produit (nom, marque, nombre, fk_magasin) VALUES "
-                    . "(:nom, :marque, :nombre, :fk_magasin)";
-            $this->db->prepare($sql)->execute($datas);
-            $stored = true;
-        }
-        return $stored;
-    }
-
-
-    // une fonction pour vérifier si le produit existe déjà
-    public function productExist($nom, $marque): bool {
-        $sql = "SELECT count(*) From produit WHERE nom = :nom AND marque = :marque;";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam('nom', $nom, \PDO::PARAM_STR);
-        $stmt->bindParam('marque', $marque, \PDO::PARAM_STR);
-        $stmt->execute();
-        return $stmt->fetchColumn() > 0;
-    }
-
-    // une fonction pour afficher des produits
-    public function getProducts(): array {
-        $sql = "SELECT * From produit;";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        return $donnees;
-    }
-
-    // une fonction pour modifier des produits
-    public function updateProduct($id, $nom, $marque, $nombre, $fk_magasin): bool {
-        $updated = false;
-        if (!empty($id) && !empty($nom) && !empty($marque) && !empty($nombre) && !empty($fk_magasin)) {
-            $datas = [
-                'id' => $id,
-                'nom' => $nom,
-                'marque' => $marque,
-                'nombre' => $nombre,
-                'fk_magasin' => $fk_magasin,
-            ];
-            $sql = "UPDATE produit SET nom = :nom, marque = :marque, nombre = :nombre, fk_magasin = :fk_magasin WHERE id = :id;";
-            $this->db->prepare($sql)->execute($datas);
-            $updated = true;
-        }
-        return $updated;
-    }
-
-    // une fonction pour supprimer des produits
-    public function deleteProduct($id): bool {
-        $deleted = false;
-        if (!empty($id)) {
-            $datas = [
-                'id' => $id,
-            ];
-            $sql = "DELETE FROM produit WHERE id = :id;";
-            $this->db->prepare($sql)->execute($datas);
-            $deleted = true;
-        }
-        return $deleted;
-    }
-
-    // une fonction pour créer des magasins
-    public function storeMagasin($nom, $adresse): bool {
-        $stored = false;
-        if (!empty($nom) && !empty($adresse)) {
-            $datas = [
-                'nom' => $nom,
-                'adresse' => $adresse,
-            ];
-            $sql = "INSERT INTO magasin (nom, adresse) VALUES "
-                    . "(:nom, :adresse)";
-            $this->db->prepare($sql)->execute($datas);
-            $stored = true;
-        }
-        return $stored;
-    }
-
-    // une fonction pour vérifier si le magasin existe déjà
-    public function magasinExist($nom, $adresse): bool {
+     // une fonction pour vérifier si le magasin existe déjà
+     public function magasinExist($nom, $adresse): bool {
         $sql = "SELECT count(*) From magasin WHERE nom = :nom AND adresse = :adresse;";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam('nom', $nom, \PDO::PARAM_STR);
         $stmt->bindParam('adresse', $adresse, \PDO::PARAM_STR);
         $stmt->execute();
+        // compter les nombres de colonnes qui nous a eté renvoyé
         return $stmt->fetchColumn() > 0;
     }
 
@@ -208,6 +69,7 @@ class DbManager implements I_API {
     // une fonction pour modifier des magasins
     public function updateMagasin($id, $nom, $adresse): bool {
         $updated = false;
+        // vérifie qu'il y aie des données la dedans
         if (!empty($id) && !empty($nom) && !empty($adresse)) {
             $datas = [
                 'id' => $id,
@@ -235,52 +97,95 @@ class DbManager implements I_API {
         return $deleted;
     }
 
-    // une fonction pour ajouter des produits au Magasin
-    public function addProductToMagasin($id, $nombre): bool {
-        $updated = false;
-        if (!empty($id) && !empty($nombre)) {
+     // une fonction pour créer des magasins
+     public function storeMagasin($nom, $adresse): bool {
+        // stored = est ce qu'il a été enregistré
+        $stored = false;
+        if (!empty($nom) && !empty($adresse)) {
             $datas = [
-                'id' => $id,
-                'nombre' => $nombre,
+                'nom' => $nom,
+                'adresse' => $adresse,
             ];
-            $sql = "UPDATE produit SET nombre = nombre + :nombre WHERE id = :id;";
+            $sql = "INSERT INTO magasin (nom, adresse) VALUES "
+                    . "(:nom, :adresse)";
             $this->db->prepare($sql)->execute($datas);
-            $updated = true;
+            // true = magasin enregistré 
+            $stored = true;
         }
-        return $updated;
+        return $stored;
     }
 
-    // une fonction pour l'envoie d'un mail au magasin pour prvenir du changement du stock
-    public function sendMail($id, $nombre): bool {
-        $updated = false;
-        if (!empty($id) && !empty($nombre)) {
+
+    // une fonction pour créer des produits
+    public function storeProduit($nom, $marque, $nombre, $fk_magasin): bool {
+        $stored = false;
+        if (!empty($nom) && !empty($marque) && !empty($nombre) && !empty($fk_magasin)) {
             $datas = [
-                'id' => $id,
+                'nom' => $nom,
+                'marque' => $marque,
                 'nombre' => $nombre,
+                'fk_magasin' => $fk_magasin,
             ];
-            $sql = "UPDATE produit SET nombre = nombre + :nombre WHERE id = :id;";
+            $sql = "INSERT INTO produit (nom, marque, nombre, fk_magasin) VALUES "
+                    . "(:nom, :marque, :nombre, :fk_magasin)";
             $this->db->prepare($sql)->execute($datas);
-            $updated = true;
+            $stored = true;
         }
-        return $updated;
+        return $stored;
     }
 
-    // une fonction pour afficher les produits d'un magasin
-    public function getProductsByMagasin($id): array {
-        $sql = "SELECT * From produit WHERE fk_magasin = :id;";
+
+    // une fonction pour vérifier si le produit existe déjà
+    public function produitExist($nom, $marque): bool {
+        $sql = "SELECT count(*) From produit WHERE nom = :nom AND marque = :marque;";
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam('id', $id, \PDO::PARAM_STR);
+        $stmt->bindParam('nom', $nom, \PDO::PARAM_STR);
+        $stmt->bindParam('marque', $marque, \PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
+    // une fonction pour afficher des produits
+    public function getProduits(): array {
+        // magasin_id= l'id de magasin
+        $sql = "SELECT * From produit INNER JOIN magasin ON produit.fk_magasin= magasin.id;";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $donnees;
     }
 
-    
+    // une fonction pour modifier des produits
+    public function updateProduit($id, $nom, $marque, $nombre, $fk_magasin): bool {
+        $updated = false;
+        if (!empty($id) && !empty($nom) && !empty($marque) && !empty($nombre) && !empty($fk_magasin)) {
+            $datas = [
+                'id' => $id,
+                'nom' => $nom,
+                'marque' => $marque,
+                'nombre' => $nombre,
+                'fk_magasin' => $fk_magasin,
+            ];
+            $sql = "UPDATE produit SET nom = :nom, marque = :marque, nombre = :nombre, fk_magasin = :fk_magasin WHERE id = :id;";
+            $this->db->prepare($sql)->execute($datas);
+            $updated = true;
+        }
+        return $updated;
+    }
 
-    
-    
-        
-    
+    // une fonction pour supprimer des produits
+    public function deleteProduit($id): bool {
+        $deleted = false;
+        if (!empty($id)) {
+            $datas = [
+                'id' => $id,
+            ];
+            $sql = "DELETE FROM produit WHERE id = :id;";
+            $this->db->prepare($sql)->execute($datas);
+            $deleted = true;
+        }
+        return $deleted;
+    }
 
 
 

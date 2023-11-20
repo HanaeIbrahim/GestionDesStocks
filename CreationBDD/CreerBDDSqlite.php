@@ -37,17 +37,31 @@ CREATE TABLE produit (
     nom varchar(30) NOT NULL,
     marque varchar(30) NOT NULL,
     nombre integer NOT NULL,
-    fk_magasin integer NOT NULL,
-    FOREIGN KEY(fk_magasin) REFERENCES magasin(id),
     UNIQUE (nom, marque)
-    
 );
 
+CREATE TABLE produit_dans_magasin (
+    fk_magasin integer NOT NULL, 
+    fk_produit integer NOT NULL, 
+    PRIMARY KEY(fk_magasin, fk_produit), 
+    FOREIGN KEY(fk_magasin) REFERENCES magasin(id), 
+    FOREIGN KEY(fk_produit) REFERENCES produit(id)
+);
 
 
 /* Mot de passe : Testtest1$ */
 INSERT INTO admin (prenom, nom, email, mot_de_passe) VALUES ('Hanae','Ibrahim',  'hanae.ibrahim@gmail.com', '$2y$10$rqqrJKqB441HNcsBm8JhWOpOCtK2xrunrHX5Rn4Zf34Nb9UyuZ.aK');
 
+INSERT INTO magasin (nom, adresse) VALUES ('Bershka', 'Rue de 5, 1001 Lausanne');
+INSERT INTO magasin (nom, adresse) VALUES ('Ricardo', 'Rue de 6, 1001 Lausanne');
+
+INSERT INTO produit (nom, marque, nombre) VALUES ('Jeans', 'Levis', '4');
+INSERT INTO produit (nom, marque, nombre) VALUES ('Pull', 'Davidos', '14');
+INSERT INTO produit (nom, marque, nombre) VALUES ('T-shirt', 'Nike', '147');
+
+INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('1', '1');
+INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('1', '2');
+INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('2', '3');
 
 
 COMMANDE_SQL;

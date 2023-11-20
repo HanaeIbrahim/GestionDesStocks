@@ -7,6 +7,7 @@ class DbManager implements I_API {
     // connection pour la base de donnée dans les fonctions
     private $db;
 
+    // constructeur
     public function __construct() {
         // récupère ce qu'il y a dans le dossier config, DIRECTORY_SEPARATOR pour Mac et Pc / 
         $config = parse_ini_file('config' . DIRECTORY_SEPARATOR . 'dbSqlite.ini', true);
@@ -21,7 +22,35 @@ class DbManager implements I_API {
         }
     }
 
-    
+    // pour verifier si le mail existe déjà
+    public function emailExist($email): bool {
+        $sql = "SELECT count(*) From admin WHERE email = :email;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam('email', $email, \PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
+    // une fonction pour créer des admins
+    public function storeAdmin($prenom, $nom, $email, $mot_de_passe): bool {
+        $stored = false;
+        if (!empty($prenom) && !empty($nom) && !empty($email) && !empty($mot_de_passe)) {
+            $now = date("Y-m-d H:i:s");
+            $datas = [
+                'prenom' => $prenom,
+                'nom' => $nom,
+                'email' => $email,
+                'mot_de_passe' => $mot_de_passe
+            ];
+            // insérer à la colonne firstname etc 
+            $sql = "INSERT INTO admin (prenom, nom, email, mot_de_passe) VALUES "
+                    . "(:prenom, :nom, :email, :mot_de_passe)";
+            $this->db->prepare($sql)->execute($datas);
+            $stored = true;
+        }
+        return $stored;
+}
+
      //connection entant qu'admin, array car il envoie email_ok et mot_de_passe_ok
      public function getAdminDatas($email, $mot_de_passe): array {
         $sql = "SELECT * From admin WHERE email = :email;";
@@ -34,6 +63,7 @@ class DbManager implements I_API {
         // récupérer les résultats de la requete
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         // si on recois rien
+        //$donnees[0]["mot_de_passe" : le hach de ce mot de passe est comparé avec le hache de l'utilisateur $mot_de_passe
         if (!$donnees || !password_verify($mot_de_passe, $donnees[0]["mot_de_passe"])) {
             $donnees[0]["authentification_ok"] = false;
         } else {
@@ -59,7 +89,7 @@ class DbManager implements I_API {
 
     // une fonction pour afficher des Magasins
     public function getMagasins(): array {
-        $sql = "SELECT * From magasin;";
+        $sql = "SELECT * FROM magasin;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);

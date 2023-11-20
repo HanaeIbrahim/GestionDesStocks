@@ -35,15 +35,32 @@ CREATE TABLE IF NOT EXISTS produit (
     nombre integer NOT NULL,
     -- UNSIGNED pour dire que je n'utilise que les chiffres positif
     fk_magasin int UNSIGNED NOT NULL,
-    -- contraintes--
-    FOREIGN KEY(fk_magasin) REFERENCES magasin(id),
     UNIQUE (nom, marque)
     
+);
+
+CREATE TABLE IF NOT EXISTS produit_dans_magasin (
+    fk_magasin int UNSIGNED NOT NULL, 
+    fk_produit int UNSIGNED NOT NULL, 
+    -- contraintes--
+    PRIMARY KEY(fk_magasin, fk_produit), 
+    FOREIGN KEY(fk_magasin) REFERENCES magasin(id), 
+    FOREIGN KEY(fk_produit) REFERENCES produit(id)
 );
 
 
 /* Mot de passe : Testtest1$   */
 INSERT INTO admin (prenom, nom, email, mot_de_passe) VALUES ('Hanae','Ibrahim',  'hanae.ibrahim@gmail.com', '$2y$10$rqqrJKqB441HNcsBm8JhWOpOCtK2xrunrHX5Rn4Zf34Nb9UyuZ.aK');
 
+INSERT INTO magasin (nom, adresse) VALUES ('Bershka', 'Rue de 5, 1001 Lausanne');
+INSERT INTO magasin (nom, adresse) VALUES ('Ricardo', 'Rue de 6, 1001 Lausanne');
 
+INSERT INTO produit (nom, marque, nombre) VALUES ('Jeans', 'Levis', '4');
+INSERT INTO produit (nom, marque, nombre) VALUES ('Pull', 'Davidos', '14');
+INSERT INTO produit (nom, marque, nombre) VALUES ('T-shirt', 'Nike', '147');
+   -- Dans magasin1 on a le produit 1--
+INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('1', '1');
+-- Dans magasin1 on a le produit 2--
+INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('1', '2');
+INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('2', '3');
 

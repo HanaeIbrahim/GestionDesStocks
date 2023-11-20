@@ -7,6 +7,12 @@ interface I_API {
     //connection entant qu'admin
     public function getAdminDatas($email, $mot_de_passe): array;
 
+    // email existe
+    public function emailExist($email): bool;
+
+    // une fonction pour créer des admins
+    public function storeAdmin($firstname, $lastname, $email, $mot_de_passe): bool;
+
     // MAGASIN
     // une fonction pour afficher des Magasins
     public function getMagasins(): array;

@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS produit (
     marque varchar(30) NOT NULL,
     nombre integer NOT NULL,
     -- UNSIGNED pour dire que je n'utilise que les chiffres positif
-    fk_magasin int UNSIGNED NOT NULL,
     UNIQUE (nom, marque)
     
 );

@@ -23,6 +23,9 @@ interface I_API {
     // une fonction pour vérifier si le magasin existe déjà
     public function magasinExist($nom, $adresse): bool;
 
+    // une fonction pour vérifier si tous les magasins existe déjà
+    public function magasinsExist($magasins): bool;
+
     // une fonction pour modifier des magasins
     public function updateMagasin($id, $nom, $adresse): bool;
     

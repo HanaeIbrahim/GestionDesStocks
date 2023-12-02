@@ -35,7 +35,7 @@
                 <tr>
                     <th><?= $magasin["nom"]; ?></th>
                     <td><?= $magasin["adresse"]; ?></td>
-                    <td><?= $magasin["id"]; ?></td>
+                    <td><?= $magasin["nombre"]; ?></td>
                     <td><a href="?modif=<?= $magasin["id"]; ?>">Modification</a></td>
                     <td><a href="?sup=<?= $magasin["id"]; ?>">Supression</a></td>
                 </tr>

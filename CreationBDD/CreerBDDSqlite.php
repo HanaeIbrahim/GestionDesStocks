@@ -36,7 +36,7 @@ CREATE TABLE produit (
     id integer PRIMARY KEY AUTOINCREMENT,
     nom varchar(30) NOT NULL,
     marque varchar(30) NOT NULL,
-    nombre integer NOT NULL,
+    quantite integer NOT NULL,
     UNIQUE (nom, marque)
 );
 
@@ -55,14 +55,14 @@ INSERT INTO admin (prenom, nom, email, mot_de_passe) VALUES ('Hanae','Ibrahim', 
 INSERT INTO magasin (nom, adresse) VALUES ('Bershka', 'Rue de 5, 1001 Lausanne');
 INSERT INTO magasin (nom, adresse) VALUES ('Ricardo', 'Rue de 6, 1001 Lausanne');
 
-INSERT INTO produit (nom, marque, nombre) VALUES ('Jeans', 'Levis', '4');
-INSERT INTO produit (nom, marque, nombre) VALUES ('Pull', 'Davidos', '14');
-INSERT INTO produit (nom, marque, nombre) VALUES ('T-shirt', 'Nike', '147');
+INSERT INTO produit (nom, marque, quantite) VALUES ('Jeans', 'Levis', '4');
+INSERT INTO produit (nom, marque, quantite) VALUES ('Pull', 'Davidos', '14');
+INSERT INTO produit (nom, marque, quantite) VALUES ('T-shirt', 'Nike', '147');
 
 INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('1', '1');
 INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('1', '2');
 INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('2', '3');
-
+INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES ('2', '1');
 
 COMMANDE_SQL;
 

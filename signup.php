@@ -24,7 +24,6 @@ require_once('./controleurs/signupValidation.php');
                                 $url .= "://" . $_SERVER['HTTP_HOST'];
                                 $url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
                                 ?>
-                                <a class="btn btn-lg btn-success" href="<?php echo $url ?>login.php">Connexion</a>
                             </div>
                         </div>
                     <?php else : ?>

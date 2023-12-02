@@ -87,9 +87,23 @@ class DbManager implements I_API {
         return $stmt->fetchColumn() > 0;
     }
 
+
+    public function magasinsExist($magasins): bool {
+        $sql = "SELECT id From magasin;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        // ça nous retouren tous les id qui existes
+        $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        // compter les nombres de colonnes qui nous a eté renvoyé
+        $diff = array_diff($donnees, $magasins);
+        return count($diff) === 0;
+    }
+
     // une fonction pour afficher des Magasins
     public function getMagasins(): array {
-        $sql = "SELECT * FROM magasin;";
+        $sql = "SELECT nom, adresse, magasin.id, COUNT(fk_produit) as nombre from produit_dans_magasin
+        INNER JOIN magasin ON fk_magasin = magasin.id
+        GROUP BY nom, adresse, magasin.id;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -178,7 +192,11 @@ class DbManager implements I_API {
     // une fonction pour afficher des produits
     public function getProduits(): array {
         // magasin_id= l'id de magasin
-        $sql = "SELECT * From produit INNER JOIN magasin ON produit.fk_magasin= magasin.id;";
+        $sql = "SELECT produit.id, produit.nom, produit.marque, produit.quantite, GROUP_CONCAT(magasin.nom, ', ') AS 'magasins'
+        FROM produit_dans_magasin
+        INNER JOIN produit ON produit.id = fk_produit
+        INNER JOIN magasin ON magasin.id = fk_magasin
+        GROUP BY produit.id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);

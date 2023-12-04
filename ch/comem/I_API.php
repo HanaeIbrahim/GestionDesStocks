@@ -42,6 +42,9 @@ interface I_API {
     // une fonction pour vérifier si le produit existe déjà
     public function produitExist($nom, $marque): bool;
 
+    // une fonction pour vérifier si l'id du produit existe déjà
+    public function produitIdExist($id): bool;
+
     // une fonction pour modifier des produits
     public function updateProduit($id, $nom, $marque, $nombre, $fk_magasin): bool;
 

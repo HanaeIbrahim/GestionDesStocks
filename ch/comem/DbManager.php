@@ -95,7 +95,14 @@ class DbManager implements I_API {
         // ça nous retouren tous les id qui existes
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         // compter les nombres de colonnes qui nous a eté renvoyé
-        $diff = array_diff($donnees, $magasins);
+        // Initialiser un tableau pour stocker les valeurs d'id
+        $donneesIdArray = array();
+        // Parcourir le tableau $donnees et extraire les valeurs d'id
+        foreach ($donnees as $row) {
+            $donneesIdArray[] = $row['id'];
+        }
+        //("tableau bdd", $donneesIdArray, "tableau recu", $magasins);
+        $diff = array_diff($magasins, $donneesIdArray);
         return count($diff) === 0;
     }
 
@@ -161,19 +168,32 @@ class DbManager implements I_API {
 
 
     // une fonction pour créer des produits
-    public function storeProduit($nom, $marque, $nombre, $fk_magasin): bool {
+    public function storeProduit($nom, $marque, $quantite, $array_fk_magasin): bool {
         $stored = false;
-        if (!empty($nom) && !empty($marque) && !empty($nombre) && !empty($fk_magasin)) {
+        // si les données ne sont pas vides
+        if (!empty($nom) && !empty($marque) && !empty($quantite) && !empty($array_fk_magasin)) {
             $datas = [
                 'nom' => $nom,
                 'marque' => $marque,
-                'nombre' => $nombre,
-                'fk_magasin' => $fk_magasin,
+                'quantite' => $quantite
             ];
-            $sql = "INSERT INTO produit (nom, marque, nombre, fk_magasin) VALUES "
-                    . "(:nom, :marque, :nombre, :fk_magasin)";
+            $sql = "INSERT INTO produit (nom, marque, quantite) VALUES "
+                    . "(:nom, :marque, :quantite)";
             $this->db->prepare($sql)->execute($datas);
+            
+            $idProduit = $this->db->lastInsertId();
+            // pour chaque magasin dans le tableau
+            foreach ($array_fk_magasin as $fk_magasin) {
+                $datas = [
+                    'fk_magasin' => $fk_magasin,
+                    'fk_produit' => $idProduit
+                ];
+                $sql = "INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES "
+                        . "(:fk_magasin, :fk_produit)";
+                $this->db->prepare($sql)->execute($datas);
+            }
             $stored = true;
+
         }
         return $stored;
     }
@@ -189,6 +209,15 @@ class DbManager implements I_API {
         return $stmt->fetchColumn() > 0;
     }
 
+    // une fonction pour vérifier si l'id du produit existe déjà
+    public function produitIdExist($id): bool {
+        $sql = "SELECT count(*) From produit WHERE id = :id;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam('id', $id, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
     // une fonction pour afficher des produits
     public function getProduits(): array {
         // magasin_id= l'id de magasin
@@ -196,7 +225,7 @@ class DbManager implements I_API {
         FROM produit_dans_magasin
         INNER JOIN produit ON produit.id = fk_produit
         INNER JOIN magasin ON magasin.id = fk_magasin
-        GROUP BY produit.id";
+        GROUP BY produit.id ORDER BY produit.id DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -204,19 +233,29 @@ class DbManager implements I_API {
     }
 
     // une fonction pour modifier des produits
-    public function updateProduit($id, $nom, $marque, $nombre, $fk_magasin): bool {
+    public function updateProduit($id, $nom, $marque, $quantite, $array_fk_magasin): bool {
         $updated = false;
-        if (!empty($id) && !empty($nom) && !empty($marque) && !empty($nombre) && !empty($fk_magasin)) {
+        if (!empty($id) && !empty($nom) && !empty($marque) && !empty($quantite) && !empty($array_fk_magasin)) {
             $datas = [
                 'id' => $id,
                 'nom' => $nom,
                 'marque' => $marque,
-                'nombre' => $nombre,
-                'fk_magasin' => $fk_magasin,
+                'quantite' => $quantite
             ];
-            $sql = "UPDATE produit SET nom = :nom, marque = :marque, nombre = :nombre, fk_magasin = :fk_magasin WHERE id = :id;";
-            $this->db->prepare($sql)->execute($datas);
+            $sql = "UPDATE produit SET nom = :nom, marque = :marque, quantite = :quantite WHERE id = :id;";
+            $produitModifie = $this->db->prepare($sql)->execute($datas);
+            
+            // Suppression des anciennes associations avec les magasins
+            $sqlDelete = "DELETE FROM produit_dans_magasin WHERE fk_produit = :id;";
+            $this->db->prepare($sqlDelete)->execute(['id' => $id]);
+
+            // Ajout des nouvelles associations avec les magasins
+            foreach ($array_fk_magasin as $fk_magasin) {
+                $sqlInsert = "INSERT INTO produit_dans_magasin (fk_magasin, fk_produit) VALUES (:fk_magasin, :fk_produit);";
+                $this->db->prepare($sqlInsert)->execute(['fk_magasin' => $fk_magasin, 'fk_produit' => $id]);
+            }
             $updated = true;
+
         }
         return $updated;
     }

@@ -77,7 +77,7 @@ class DbManager implements I_API {
     }
 
      // une fonction pour vérifier si le magasin existe déjà
-     public function magasinExist($nom, $adresse): bool {
+     public function magasinExistCreate($nom, $adresse): bool {
         $sql = "SELECT count(*) From magasin WHERE nom = :nom AND adresse = :adresse;";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam('nom', $nom, \PDO::PARAM_STR);
@@ -87,6 +87,32 @@ class DbManager implements I_API {
         return $stmt->fetchColumn() > 0;
     }
 
+    // une fonction pour vérifier si le magasin existe déjà lorsqu'on met à jour 
+    public function magasinExistUpdate($id, $nom, $adresse): bool {
+        $sql = "SELECT count(*) From magasin WHERE nom = :nom AND adresse = :adresse AND id != :id;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam('nom', $nom, \PDO::PARAM_STR);
+        $stmt->bindParam('adresse', $adresse, \PDO::PARAM_STR);
+        $stmt->bindParam('id', $id, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
+    public function magasinIdExist($id): bool {
+        $sql = "SELECT count(*) From magasin WHERE id = :id;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam('id', $id, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
+    public function magasinSansProduit($id): bool  {
+        $sql = "SELECT count(*) From produit_dans_magasin WHERE fk_magasin = :id;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam('id', $id, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn() === 0;
+    }
 
     public function magasinsExist($magasins): bool {
         $sql = "SELECT id From magasin;";
@@ -106,11 +132,14 @@ class DbManager implements I_API {
         return count($diff) === 0;
     }
 
+    
+
     // une fonction pour afficher des Magasins
     public function getMagasins(): array {
-        $sql = "SELECT nom, adresse, magasin.id, COUNT(fk_produit) as nombre from produit_dans_magasin
-        INNER JOIN magasin ON fk_magasin = magasin.id
-        GROUP BY nom, adresse, magasin.id;";
+        $sql = "SELECT magasin.nom, magasin.adresse, magasin.id, COUNT(produit_dans_magasin.fk_produit) AS nombre 
+        FROM magasin
+        LEFT JOIN produit_dans_magasin ON magasin.id = produit_dans_magasin.fk_magasin
+        GROUP BY magasin.nom, magasin.adresse, magasin.id;";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $donnees = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -200,11 +229,22 @@ class DbManager implements I_API {
 
 
     // une fonction pour vérifier si le produit existe déjà
-    public function produitExist($nom, $marque): bool {
+    public function produitExistCreate($nom, $marque): bool {
         $sql = "SELECT count(*) From produit WHERE nom = :nom AND marque = :marque;";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam('nom', $nom, \PDO::PARAM_STR);
         $stmt->bindParam('marque', $marque, \PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
+    // une fonction pour vérifier si le produit existe déjà lorsqu'on met à jour 
+    public function produitExistUpdate($id, $nom, $marque): bool {
+        $sql = "SELECT count(*) From produit WHERE nom = :nom AND marque = :marque AND id != :id;";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam('nom', $nom, \PDO::PARAM_STR);
+        $stmt->bindParam('marque', $marque, \PDO::PARAM_STR);
+        $stmt->bindParam('id', $id, \PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchColumn() > 0;
     }
@@ -269,6 +309,8 @@ class DbManager implements I_API {
             ];
             $sql = "DELETE FROM produit WHERE id = :id;";
             $this->db->prepare($sql)->execute($datas);
+            $sqltableinter = "DELETE FROM produit_dans_magasin WHERE fk_produit = :id;";
+            $this->db->prepare($sqltableinter)->execute($datas);
             $deleted = true;
         }
         return $deleted;

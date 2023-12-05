@@ -21,7 +21,16 @@ interface I_API {
     public function storeMagasin($nom, $adresse): bool;
 
     // une fonction pour vérifier si le magasin existe déjà
-    public function magasinExist($nom, $adresse): bool;
+    public function magasinExistCreate($nom, $adresse): bool;
+
+    // une fonction pour vérifier si le magasin existe déjà lorsqu'on met à jour un magasin
+    public function magasinExistUpdate($id, $nom, $adresse): bool;
+
+    // une fonction pour vérifier si l'id du magasin existe déjà
+    public function magasinIdExist($id): bool;
+
+    // une fonction pour vérifier si le magasin n'a pas de produit
+    public function magasinSansProduit($id): bool;
 
     // une fonction pour vérifier si tous les magasins existe déjà
     public function magasinsExist($magasins): bool;
@@ -39,8 +48,11 @@ interface I_API {
     // une fonction pour créer des produits 
     public function storeProduit($nom, $marque, $nombre, $fk_magasin): bool;
 
-    // une fonction pour vérifier si le produit existe déjà
-    public function produitExist($nom, $marque): bool;
+    // une fonction pour vérifier si le produit existe déjà lorsqu'on crée un produit
+    public function produitExistCreate($nom, $marque): bool;
+
+    // une fonction pour vérifier si le produit existe déjà lorsqu'on met à jour un produit
+    public function produitExistUpdate($id, $nom, $marque): bool;
 
     // une fonction pour vérifier si l'id du produit existe déjà
     public function produitIdExist($id): bool;
